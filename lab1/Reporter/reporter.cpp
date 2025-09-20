@@ -6,8 +6,14 @@
 #include <algorithm>
 #include <iomanip>
 #include <stdexcept>
-
-using namespace std;
+using std::string;
+using std::stod;
+using std::cerr;
+using std::out_of_range;
+using std::exception;
+using std::sort;
+using std::runtime_error;
+using std::cout;
 
 int main(int argc, char* argv[]) {
     if (argc != 4) {
@@ -28,36 +34,12 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
-    vector <employee> emloyess;
-    try {
-        ifstream inFile(binFileName, ios::binary);
-        if (!inFile.is_open())
-            throw runtime_error("Error: could not open input file");
-        employee e;
-        while (inFile.read(reinterpret_cast<char*>(&e), sizeof(e))) {
-            emloyess.push_back(e);
-        }
-        inFile.close();
-        sort(emloyess.begin(), emloyess.end(), [](const employee& a, const employee& b) {return a.num < b.num; });
-
-        ofstream outFile(reportFileName);
-        if (!outFile.is_open()) {
-            throw runtime_error("Error: could not open report file");
-        }
-
-        outFile << "Report on file \"" << binFileName << "\"\n" << left << fixed << setprecision(2);
-        outFile << left << setw(10) << "Number" << setw(20) << "Name" << setw(16) << "Hours worked" << setw(12) << "Salary" << "\n";
-        double salary = 0.0;
-        for (const auto& e : emloyess) {
-            salary = e.hours * rate;
-            outFile << left << setw(10) << e.num << setw(20) << e.name << setw(16) << e.hours << setw(12) << salary << "\n";
-        }
-        outFile.close();
-    }
-    catch (const exception& ex) {
-        cerr << ex.what() << "\n";
+    vector <employee> employees;
+    if (readFromBinary(binFileName, employees) != 0)
         return 3;
-    }
+    sort(employees.begin(), employees.end(), [](const employee& a, const employee& b) {return a.num < b.num;});
+    if (writeReport(reportFileName, binFileName, employees, rate) != 0)
+        return 3;
 
     cout << "Report successfully written to file \"" << reportFileName << "\"\n";
     return 0;
