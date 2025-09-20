@@ -15,6 +15,7 @@ struct employee
 	double hours;
 	friend istream& operator >> (istream& in, employee& emp);
 	friend ofstream& operator << (ofstream& out, const pair <employee, double>& emp);
+	bool operator < (const employee& other) const;
 };
 
 int readFromBinary (const string& binFileName, vector <employee>& employees);
