@@ -2,58 +2,45 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <exception>
-
-using namespace std;
+#include <vector>
+#include <algorithm>
+#include <iomanip>
+#include <stdexcept>
+using std::string;
+using std::stod;
+using std::cerr;
+using std::out_of_range;
+using std::exception;
+using std::sort;
+using std::runtime_error;
+using std::cout;
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
+    if (argc != 4) {
         cerr << "Error: invalid startup format\n";
         return 1;
     }
 
     string binFileName = argv[1];
-    int recordCount = 0;
+    string reportFileName = argv[2];
+    double rate = 0.0;
     try {
-        recordCount = stoi(argv[2]);
-        if (recordCount <= 0)
-            throw out_of_range("Error: amount of records must be greater than zero");
+        rate = stod(argv[3]);
+        if (rate <= 0.0)
+            throw out_of_range("Error: hourly rate must be greater than zero");
     }
     catch (const exception& ex) {
         cerr << ex.what() << "\n";
         return 2;
     }
 
-    try {
-        ofstream outFile(binFileName, ios::binary | ios::trunc);
-        if (!outFile.is_open()) {
-            throw runtime_error("Error: сould not open file for writing");
-        }
-        employee e;
-        string tmpName;
-        for (int i = 0; i < recordCount; ++i) {
-            cout << "\n\n";
-            cout <<"Record No. " << (i + 1) << "\n";
-            cout << "Enter employee number: ";
-            cin >> e.num;
-            cout << "Enter employee name: ";
-            cin >> tmpName;
-            strcpy_s(e.name, sizeof(e.name), tmpName.c_str());
-            cout << "Enter number of hours worked: ";
-            cin >> e.hours;
-            if (!cin)
-                throw runtime_error("Input error");
-            outFile.write(reinterpret_cast<const char*>(&e), sizeof(e));
-            if (!outFile)
-                throw runtime_error("Write error");
-        }
-        outFile.close();
-    }
-    catch (const exception& ex) {
-        cerr << ex.what() << "\n";
+    vector <employee> employees;
+    if (readFromBinary(binFileName, employees) != 0)
         return 3;
-    }
+    sort(employees.begin(), employees.end(), [](const employee& a, const employee& b) {return a.num < b.num;});
+    if (writeReport(reportFileName, binFileName, employees, rate) != 0)
+        return 3;
 
-    cout << "Data successfully written to file \"" << binFileName << " \"\n";
+    cout << "Report successfully written to file \"" << reportFileName << "\"\n";
     return 0;
 }
