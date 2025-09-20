@@ -41,6 +41,11 @@ ofstream& operator << (ofstream& out, const pair <employee,double>& emp) {
 	return out;
 }
 
+bool employee::operator < (const employee& other) const
+{
+    return num < other.num;
+}
+
 int readFromBinary(const string& binFileName, vector<employee>& employees) {
     try {
         ifstream inFile(binFileName, ios::binary);
@@ -76,5 +81,4 @@ int writeReport(const string& outFileName, const string& binFileName, const vect
         cerr << ex.what() << "\n";
         return 3;
     }
-}
 }
