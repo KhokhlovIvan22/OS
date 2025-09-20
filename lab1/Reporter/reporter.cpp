@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     vector <employee> employees;
     if (readFromBinary(binFileName, employees) != 0)
         return 3;
-    sort(employees.begin(), employees.end(), [](const employee& a, const employee& b) {return a.num < b.num;});
+    sort(employees.begin(), employees.end());
     if (writeReport(reportFileName, binFileName, employees, rate) != 0)
         return 3;
 
