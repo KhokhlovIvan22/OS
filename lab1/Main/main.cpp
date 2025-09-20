@@ -5,11 +5,18 @@
 #include <string>
 #include <cstring>
 
-using namespace std;
+using std::string;
+using std::wstring;
+using std::cin;
+using std::cout;
+using std::to_wstring;
+using std::cerr;
+using std::ifstream;
+using std::ios;
 
 int main() {
     string binFileName;
-    int    recordCount;
+    int  recordCount;
     cout << "Enter binary file name: ";
     cin >> binFileName;
     cout << "Enter number of records: ";
