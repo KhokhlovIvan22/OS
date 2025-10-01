@@ -6,7 +6,6 @@
 #include <vector>
 #include <sstream>
 #include <windows.h>
-
 using std::vector;
 using std::string;
 using std::wstring;
@@ -19,20 +18,19 @@ using std::to_wstring;
 class FileTest : public ::testing::Test {
 protected:
     vector<wstring> tempFiles;
-
     void TearDown() override {
         for (auto& f : tempFiles) {
             if (fileExists(f)) deleteFile(f);
         }
     }
-
-    void track(const wstring& f) { tempFiles.push_back(f); }
+    void track(const wstring& f) { tempFiles.push_back(f); 
+    }
 };
 
+//checks the writing of structures into bin and reading
 TEST_F(FileTest, ReadWriteBinary) {
     const string bin = "test_employees.bin";
     track(wstring(bin.begin(), bin.end()));
-
     { 
         ofstream out(bin, ios::binary | ios::trunc);
         employee a{ 1, "Alice", 2.0 };
@@ -40,7 +38,6 @@ TEST_F(FileTest, ReadWriteBinary) {
         out.write(reinterpret_cast<char*>(&a), sizeof(a));
         out.write(reinterpret_cast<char*>(&b), sizeof(b));
     }
-
     vector<employee> records;
     int rc = readFromBinary(bin, records);
     EXPECT_EQ(rc, 0);
@@ -50,6 +47,7 @@ TEST_F(FileTest, ReadWriteBinary) {
     EXPECT_DOUBLE_EQ(records[1].hours, 3.5);
 }
 
+//checks the correctness of the data in the report
 TEST_F(FileTest, WriteReportContainsSalary) {
     const string bin = "test_report.bin";
     const string txt = "test_report.txt";
@@ -75,16 +73,16 @@ TEST_F(FileTest, WriteReportContainsSalary) {
     EXPECT_TRUE(found);
 }
 
+//launches Creator.exe with zero employees
 TEST_F(FileTest, CreatorRejectsZeroCount) {
     const wstring bin = L"test0.bin";
     track(bin);
-
     DWORD code = RunProcess(L"Creator.exe " + bin + L" 0");
-
     EXPECT_NE(code, 0u);
     EXPECT_FALSE(fileExists(bin));
 }
 
+//launches Reporter.exe with a negative rate
 TEST_F(FileTest, ReporterRejectsNegativeRate) {
     const wstring bin = L"test_reporter.bin";
     track(bin);
