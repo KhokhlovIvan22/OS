@@ -17,8 +17,7 @@ int main()
         vector<int> arr;
         cin >> arr;
         cout << "\n";
-        int min = 0, max = 0;
-        double avg = 0.0;
+        int min = 0, max = 0, avg = 0;
         MinMax mm{ arr, min, max };
         AverageEl av{ arr, avg };
         HANDLE hMinMaxThread = CreateThread(nullptr, 0, minmaxThread, &mm, 0, nullptr);
