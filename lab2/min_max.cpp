@@ -3,7 +3,6 @@
 #include <vector>
 using std::vector;
 using std::cout;
-const int sleepTime = 7;
 
 DWORD WINAPI minmaxThread(LPVOID param) {
 	MinMax* args = static_cast<MinMax*>(param);
@@ -16,7 +15,7 @@ DWORD WINAPI minmaxThread(LPVOID param) {
 			mn = a[i];
 		if (a[i] > mx)
 			mx = a[i];
-		Sleep(sleepTime);
+		Sleep(minMaxSleepTime);
 	}
 	cout << "Min element = " << mn << ", max element = " << mx << "\n";
 	args->min = mn;
