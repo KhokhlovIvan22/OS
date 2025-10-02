@@ -7,4 +7,4 @@ using std::vector;
 
 istream& operator >> (istream& in, vector<int>& arr);
 ostream& operator << (ostream& out, const vector<int>& arr);
-void modify(vector<int>& arr, int min, int max, double avg);
+void modify(vector<int>& arr, int min, int max, int avg);
