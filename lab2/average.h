@@ -5,7 +5,9 @@ using std::vector;
 
 struct AverageEl {
 	vector<int>& arr;
-	double& avg;
+	int& avg;
 };
+
+static const int averageSleepTime = 7;
 
 DWORD WINAPI averageThread(LPVOID param);
