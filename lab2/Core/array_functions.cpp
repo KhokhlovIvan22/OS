@@ -26,11 +26,11 @@ ostream& operator << (ostream& out, const vector<int>& arr) {
 	return out;
 }
 
-void modify(vector<int>& arr, int min, int max, double avg) {
+void modify(vector<int>& arr, int min, int max, int avg) {
 	if (arr.empty()) return;
 	for (int i = 0; i < arr.size(); ++i) {
 		if (arr[i] == min || arr[i] == max) {
-			arr[i] = static_cast<int>(avg);
+			arr[i] = avg;
 		}
 	}
 }
