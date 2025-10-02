@@ -9,4 +9,6 @@ struct MinMax {
 	int& max;
 };
 
+static const int minMaxSleepTime = 12;
+
 DWORD WINAPI minmaxThread(LPVOID param);
