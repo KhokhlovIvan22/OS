@@ -38,8 +38,8 @@ A multithreaded program for processing integer arrays:
 After both threads finish, the array is modified so that all min/max values are replaced with the average.
 
 
-Build system: CMake 
-Language standards: C++98 (WinAPI threads usage) and C++20 (std::thread) 
+Build system: CMake
+Language standards: C++98 (WinAPI threads usage) and C++20 (std::thread)
 Unit testing framework: GoogleTest
 
 
