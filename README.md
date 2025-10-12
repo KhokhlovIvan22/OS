@@ -3,8 +3,8 @@ This repository contains laboratory work on the subject "Operating Systems"
 Lab 1
 
 Two console utilities for working with binary files:
-Creator — requests information about employees from the console and generates a binary file with structured records.
-Reporter — reads the binary file and produces a formatted report with aggregated statistics.  
+- Creator — requests information about employees from the console and generates a binary file with structured records.
+- Reporter — reads the binary file and produces a formatted report with aggregated statistics.  
 Both utilities are designed to demonstrate concurrent processing.
 
 
@@ -26,7 +26,7 @@ from a binary file and to generate a formatted salary report.
 
 - UnitTest.cpp - implements unit tests that check core project functionality: check binary read/write of employee records, validate that generated reports contain correct salary calculations, ensure that invalid inputs are properly rejected
 
-- helpers.h/he;pers.cpp - provide utility functions for unit tests —  implement file existence and deletion checks, reading text lines into wide strings and wrapper around WinAPI process creation to launch and monitor external executables.
+- helpers.h/helpers.cpp - provide utility functions for unit tests —  implement file existence and deletion checks, reading text lines into wide strings and wrapper around WinAPI process creation to launch and monitor external executables.
 
 
 
