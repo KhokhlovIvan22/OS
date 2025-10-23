@@ -17,4 +17,5 @@ private:
 	int size() const;
 	void push_back(int value);
 	shared_ptr<Node> head() const;
+	List reverse() const;
 };
