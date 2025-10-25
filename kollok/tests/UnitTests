@@ -1,0 +1,109 @@
+#include <gtest/gtest.h>
+#include "tasks.h"
+#include "list.h"
+#include <vector>
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
+using std::vector;
+using std::invalid_argument;
+using std::overflow_error;
+using std::istringstream;
+using std::ostringstream;
+using std::string;
+
+//Fibonacci
+TEST(FibonacciTest, GeneratesCorrectSequence) {
+    auto v = fibonacci(5);
+    vector<unsigned long long> expected = { 0,1,1,2,3 };
+    EXPECT_EQ(v, expected);
+}
+
+TEST(FibonacciTest, ThrowsOnZeroOrNegative) {
+    EXPECT_THROW(fibonacci(0), invalid_argument);
+    EXPECT_THROW(fibonacci(-5), invalid_argument);
+}
+
+//Palindrome
+TEST(PalindromeTest, DetectsTrueAndFalse) {
+    EXPECT_TRUE(isPalindrome(121));
+    EXPECT_TRUE(isPalindrome(0));
+    EXPECT_FALSE(isPalindrome(123));
+}
+
+TEST(PalindromeTest, ThrowsOnNegative) {
+    EXPECT_THROW(isPalindrome(-121), invalid_argument);
+}
+
+//List
+TEST(ListTest, EmptyListSize) {
+    List list;
+    EXPECT_EQ(list.size(), 0);
+}
+
+TEST(ListTest, PushBackAndSize) {
+    List lst;
+    lst.push_back(10);
+    lst.push_back(20);
+    EXPECT_EQ(lst.size(), 2);
+    auto head = lst.getHead();
+    ASSERT_NE(head, nullptr);
+    EXPECT_EQ(head->value, 10);
+}
+
+TEST(ListTest, ReadAndPrint) {
+    List lst;
+    istringstream input("10 20 30");
+    lst.read(input, 3);
+    EXPECT_EQ(lst.size(), 3);
+    ostringstream out;
+    lst.print(out);
+    EXPECT_EQ(out.str(), "10 20 30 \n");
+}
+
+TEST(ListTest, ReadThrowsOnNegative) {
+    List lst;
+    istringstream input("");
+    EXPECT_THROW(lst.read(input, -1), invalid_argument);
+}
+
+TEST(ListTest, ReverseListWorks) {
+    List lst;
+    lst.push_back(1);
+    lst.push_back(2);
+    lst.push_back(3);
+    List rev = reverseList(lst);
+    auto cur = rev.getHead();
+    ASSERT_NE(cur, nullptr);
+    EXPECT_EQ(cur->value, 3);
+    cur = cur->next; ASSERT_NE(cur, nullptr); EXPECT_EQ(cur->value, 2);
+    cur = cur->next; ASSERT_NE(cur, nullptr); EXPECT_EQ(cur->value, 1);
+}
+
+//End-to-End
+TEST(EndToEndTest, FullScenarioSequential) {
+    istringstream input("5\n121\n3\n10 20 30\n");
+    ostringstream output;
+    int n=0;
+    input >> n;
+    auto fib = fibonacci(n);
+    output << "First " << n << " Fibonacci numbers: ";
+    for (auto x : fib) output << x << " ";
+    output << "\n";
+    long long x;
+    input >> x;
+    output << x << (isPalindrome(x) ? " is" : " is not") << " a palindrome\n";
+    input >> n;
+    List orig;
+    orig.read(input, n);
+    List rev = reverseList(orig);
+    output << "Original list: ";
+    orig.print(output);
+    output << "Reversed list: ";
+    rev.print(output);
+    string out = output.str();
+    EXPECT_NE(out.find("First 5 Fibonacci numbers: 0 1 1 2 3"), string::npos);
+    EXPECT_NE(out.find("121 is a palindrome"), string::npos);
+    EXPECT_NE(out.find("Original list: 10 20 30"), string::npos);
+    EXPECT_NE(out.find("Reversed list: 30 20 10"), string::npos);
+}
