@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
+#include <ostream>
 using std::shared_ptr;
+using std::ostream;
+using std::istream;
 
 struct Node {
 	int value;
@@ -16,6 +19,7 @@ private:
 	~List() = default;
 	int size() const;
 	void push_back(int value);
-	shared_ptr<Node> head() const;
-	List reverse() const;
+	shared_ptr<Node> getHead() const;
+	void read(istream& in, int n);
+	void print(ostream &out) const;
 };
