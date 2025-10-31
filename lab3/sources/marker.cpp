@@ -2,6 +2,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 
 using std::move;
 using std::unique_ptr;
@@ -12,9 +14,11 @@ using std::this_thread::sleep_for;
 using std::chrono::milliseconds;
 using std::ostream;
 using std::unique_lock;
+using std::ref;
+
+mutex Marker::io;
 
 Marker::Marker(int id, shared_ptr<Array> arr): id_(id), arr(move(arr)) {}
-
 
 Marker::~Marker() {
     if (th.joinable()) 
@@ -31,20 +35,32 @@ void Marker::run(ostream& out) {
             sleep_for(milliseconds(sleepTime));
             continue;
         }
-        out << "\nMarker " << id_ << " blocked\n" << "Marked " << counter << " elements\n" << "Failed to mark element at " << index << "\n";
-        unique_lock<mutex> lk(mtx);
+        {
+            lock_guard<mutex> ioLock(io);
+            out << "\nMarker " << id_ << " blocked\n"
+                << "Marked " << counter << " elements\n"
+                << "Failed to mark element at " << index << "\n";
+        }
+        unique_lock<mutex> stateLock(mtx);
         blocked = true;
-        cv.wait(lk, [this] { return !blocked || finished; });
+        cv.wait(stateLock, [this] { return !blocked || finished; });
         if (finished) {
-            out << "Marker " << id_ << " cleaning up...\n";
+            {
+                lock_guard<mutex> ioLock(io);
+                out << "Marker " << id_ << " cleaning up...\n";
+            }
             arr->reset(id_);
-            out << "Marker " << id_ << " finished.\n";
+            {
+                lock_guard<mutex> ioLock(io);
+                out << "Marker " << id_ << " finished.\n";
+            }
             break;
         }
     }
 }
 
-void Marker::start() {th = std::thread(&Marker::run, this);}
+
+void Marker::start(ostream&out) {th = thread(&Marker::run, this, ref(out)); }
 
 void Marker::join() {
     if (th.joinable()) 
@@ -69,3 +85,5 @@ void Marker::finish() {
 }
 
 int  Marker::id() const { return id_; }
+bool Marker::isFinished() const { return finished; }
+bool Marker::isBlocked()  const { return blocked; }
