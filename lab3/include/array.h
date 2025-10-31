@@ -19,6 +19,7 @@ public:
 	Array& operator=(const Array&) = delete;
 	Array(Array&& other) noexcept;
 	Array& operator=(Array&& other) noexcept;
+	int& operator[](int index);
 	int size() const;
 	void print(ostream& out) const;
 	bool tryMark(int index, int markerId);
