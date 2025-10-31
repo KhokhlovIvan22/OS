@@ -10,6 +10,7 @@ using std::move;
 using std::mutex;
 using std::lock_guard;
 using std::invalid_argument;
+using std::out_of_range;
 
 Array::Array(int n) {
 	if (n <= 0)
@@ -30,6 +31,13 @@ Array& Array::operator=(Array&& other) noexcept {
 	size_ = other.size_;
 	other.size_ = 0;
 	return *this;
+}
+
+int& Array::operator[](int index)
+{
+	if (index >= size_)
+		throw out_of_range("Index out of range");
+	return arr[index];
 }
 
 int Array::size() const { return size_; }
