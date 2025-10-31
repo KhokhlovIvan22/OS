@@ -50,3 +50,24 @@ Key files:
 - main.cpp — entry point that initializes the array, launches the MinMax and Average threads, waits for their completion, modifies the array and outputs the results.
 - array_functions.h / array_functions.cpp — provide helper functions for array input/output and modification.
 - tests.cpp — implements end-to-end test and unit tests that verify array input/output, correct replacement of min/max values, and correctness of mimMaxThread and averageThread computations.
+
+
+Lab 3
+
+A multithreaded console program that simulates the work of "markers" on a shared integer array:
+- Each marker thread randomly selects positions in the array and marks them with its own ID.
+- If a marker encounters a conflict (tries to mark an already occupied cell), it becomes blocked and waits for user input.
+- The user can terminate a specific marker by ID. Upon termination, the marker cleans up all its marks from the array and finishes.
+- The process continues until all markers are terminated, after which the final state of the array is displayed.
+
+Build system: CMake  
+Language standard: C++23  
+Unit testing framework: GoogleTest
+
+Key files:
+- Array.h / Array.cpp — implement a thread-safe integer array with methods for marking elements, resetting marks by ID, and printing the current state.
+- Marker.h / Marker.cpp — define the Marker class that runs in its own thread, performs random marking, handles blocking/unblocking, and cleans up its marks upon termination.
+- main.cpp — entry point that initializes the array, creates and manages multiple markers, coordinates their blocking/unblocking, handles user input for terminating markers, and prints intermediate and final states of the array.
+- end2end.cpp — provides end-to-end tests that launch multiple markers, simulate their work, terminate them, and verify that the array is correctly reset and that expected output messages are produced.
+- marker_tests.cpp — unit tests for the Marker class, verifying correct state transitions (isFinished, isBlocked), proper cleanup of array elements, and correct output messages.
+- array_tests.cpp** — unit tests for the`Array class, checking constructor validation, correct behavior of tryMark and reset, and ensuring that print produces the expected output.
