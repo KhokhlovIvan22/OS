@@ -1,0 +1,36 @@
+#include "Array.h"
+#include <gtest/gtest.h>
+#include <sstream>
+#include <stdexcept>
+
+using std::ostringstream;
+using std::invalid_argument;
+
+//verifies that constructor throws if size is zero or negative
+TEST(ArrayTest, Constructor) {
+    EXPECT_THROW(Array arr(0), invalid_argument);
+    EXPECT_THROW(Array arr(-5), invalid_argument);
+}
+
+//verifies that size() returns correct value and print() outputs initial 0s
+TEST(ArrayTest, SizeAndPrint) {
+    Array arr(3);
+    ostringstream oss;
+    arr.print(oss);
+    EXPECT_EQ(arr.size(), 3);
+    EXPECT_EQ(oss.str(), "0 0 0 \n");
+}
+
+//verifies that tryMark() prevents overwrite and reset() clears array
+TEST(ArrayTest, TryMarkAndReset) {
+    Array arr(3);
+    EXPECT_TRUE(arr.tryMark(1, 42));
+    EXPECT_FALSE(arr.tryMark(1, 99));
+    ostringstream oss;
+    arr.print(oss);
+    EXPECT_EQ(oss.str(), "0 42 0 \n");
+    arr.reset(42);
+    ostringstream oss2;
+    arr.print(oss2);
+    EXPECT_EQ(oss2.str(), "0 0 0 \n");
+}
