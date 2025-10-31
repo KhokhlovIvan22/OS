@@ -1,6 +1,7 @@
 #include <memory>
 #include <ostream>
 #include <mutex>
+#include <stdexcept>
 #include "array.h"
 
 using std::make_unique;
@@ -8,8 +9,13 @@ using std::fill;
 using std::move;
 using std::mutex;
 using std::lock_guard;
+using std::invalid_argument;
 
-Array::Array(int n):arr(make_unique<int[]>(n)),size_(n) {
+Array::Array(int n) {
+	if (n <= 0)
+		throw invalid_argument("Array size must be positive");
+	size_ = n;
+	arr = make_unique<int[]>(n), 
 	fill(arr.get(), arr.get() + n, 0);
 }
 
