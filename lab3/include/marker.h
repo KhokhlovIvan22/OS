@@ -19,15 +19,18 @@ private:
     bool blocked = false;
     bool finished = false;
     mutex mtx;
+    static mutex io;
     condition_variable cv;
     const int sleepTime = 5;
     void run(ostream&out);
 public:
     Marker(int id, shared_ptr<Array> arr);
     ~Marker();
-    void start();
+    void start(ostream&out);
     void join();
     void unblock();
     void finish();
     int id() const;
+    bool isFinished() const;
+    bool isBlocked() const;
 };
