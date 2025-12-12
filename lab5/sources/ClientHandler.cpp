@@ -17,6 +17,8 @@ ClientHandler::RecordLock& ClientHandler::get_lock(int id) {
 }
 
 void ClientHandler::lockRead(int id) {
+    if (id <= 0)
+        throw runtime_error("Invalid employee ID for read lock");
     RecordLock& lock_ = get_lock(id);
     unique_lock<mutex> lk(lock_.m);
     while (lock_.writer)
@@ -27,15 +29,20 @@ void ClientHandler::lockRead(int id) {
 void ClientHandler::unlockRead(int id) {
     RecordLock& lock_ = get_lock(id);
     unique_lock<mutex> lk(lock_.m);
-    lock_.readers--;
-    if (lock_.readers == 0) 
-        lock_.cv.notify_all();
+    if (lock_.readers > 0) {
+        lock_.readers--;
+        if (lock_.readers == 0)
+            lock_.cv.notify_all();
+    }
 }
 
 void ClientHandler::lockWrite(int id) {
+    if (id <= 0) 
+        throw runtime_error("Invalid employee ID for write lock");
+ 
     RecordLock& lock_ = get_lock(id);
     unique_lock<mutex> lk(lock_.m);
-    while (lock_.writer || lock_.readers > 0) 
+    while (lock_.writer || lock_.readers > 0)
         lock_.cv.wait(lk);
     lock_.writer = true;
 }
@@ -43,34 +50,41 @@ void ClientHandler::lockWrite(int id) {
 void ClientHandler::unlockWrite(int id) {
     RecordLock& lock_ = get_lock(id);
     unique_lock<mutex> lk(lock_.m);
-    lock_.writer = false;
-    lock_.cv.notify_all();
+    if (lock_.writer) {
+        lock_.writer = false;
+        lock_.cv.notify_all();
+    }
 }
 
 employee ClientHandler::readRecord(int id) {
+    if (id <= 0) 
+        throw runtime_error("Invalid employee ID");
     ifstream fin(filename, ios::binary);
-    if (!fin) 
+    if (!fin)
         throw runtime_error("Failed to open file for reading");
     while (true) {
         employee e;
         e.readBin(fin);
-        if (!fin) 
+        if (!fin)
             break;
-        if (e.num == id) 
+        if (e.num == id)
             return e;
     }
     throw runtime_error("Record with this ID not found");
 }
 
 void ClientHandler::modify(const employee& updated) {
+    if (updated.num <= 0) {
+        throw runtime_error("Invalid employee ID for modification");
+    }
     fstream file(filename, ios::binary | ios::in | ios::out);
-    if (!file) 
+    if (!file)
         throw runtime_error("Failed to open file for modification");
     while (true) {
         streampos pos = file.tellg();
         employee e;
         e.readBin(file);
-        if (!file) 
+        if (!file)
             break;
         if (e.num == updated.num) {
             file.seekp(pos);
@@ -84,11 +98,16 @@ void ClientHandler::modify(const employee& updated) {
 void ClientHandler::processRequest(HANDLE pipe) {
     while (true) {
         Message req{};
-        if (!pipeRead(pipe, &req, sizeof(req))) 
+        if (!pipeRead(pipe, &req, sizeof(req)))
             break;
         Message resp{};
         resp.id = req.id;
         try {
+            if (req.id <= 0) {
+                resp.setCommand("error");
+                pipeWrite(pipe, &resp, sizeof(resp));
+                continue;
+            }
             if (req.isCommand("read")) {
                 lockRead(req.id);
                 employee e = readRecord(req.id);
@@ -115,7 +134,7 @@ void ClientHandler::processRequest(HANDLE pipe) {
                 resp.emp = req.emp;
                 pipeWrite(pipe, &resp, sizeof(resp));
             }
-            else if (req.isCommand("exit")) 
+            else if (req.isCommand("exit"))
                 break;
             else {
                 resp.setCommand("error");
