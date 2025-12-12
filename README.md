@@ -1,6 +1,6 @@
 This repository contains laboratory work on the subject "Operating Systems"
 
-Lab 1
+**Lab 1**
 
 Two console utilities for working with binary files:
 - **Creator** — requests information about employees from the console and generates a binary file with structured records.
@@ -29,7 +29,7 @@ from a binary file and to generate a formatted salary report.
 
 
 
-Lab 2
+**Lab 2**
 
 A multithreaded program for processing integer arrays:
 - First thread finds the minimum and maximum values in the array.
@@ -51,7 +51,7 @@ Key files:
 - **tests.cpp** — implements end-to-end test and unit tests that verify array input/output, correct replacement of min/max values, and correctness of mimMaxThread and averageThread computations.
 
 
-Lab 3
+**Lab 3**
 
 A multithreaded console program that simulates the work of "markers" on a shared integer array:
 - Each marker thread randomly selects positions in the array and marks them with its own ID.
@@ -72,7 +72,7 @@ Key files:
 - **array_tests.cpp** — unit tests for the`Array class, checking constructor validation, correct behavior of tryMark and reset, and ensuring that print produces the expected output.
 
 
-Lab 4
+**Lab 4**
 
 A multithreaded console program that implements a sender–receiver model using a shared file queue:
 - **Sender** — reads integer input from the console, normalizes it, and pushes messages into the shared queue.
@@ -91,5 +91,38 @@ Key files:
 - **CMakeLists.txt** — ensures consistent runtime library settings, builds sender and receiver together, and integrates GoogleTest.
 - **tests/filequeue_test.cpp** — unit tests for queue operations, verifying push/pop correctness and handling of edge cases.
 - **tests/sender_test.cpp** — unit tests for sender logic, checking input normalization and error messaging.
-- **tests/receiver_test.cpp** — unit tests for receiver logic, validating correct message retrieval and output formatting.
+- - **tests/receiver_test.cpp** — unit tests for receiver logic, validating correct message retrieval and output formatting.
 - **tests/end2end.cpp** — end-to-end test that launches sender and receiver, simulates message passing, and verifies correct integration.
+
+
+  **Lab 5**
+  
+A client–server console program that manages concurrent access to a binary file via named pipes:
+**Server** — creates a binary file of employee records, prints it to the console, launches multiple client processes and serves their requests through a named pipe.
+- Supports concurrent read access (multiple clients can read simultaneously).
+- Enforces exclusive write access (when a client modifies a record, it is locked until commit/release).
+- After all clients finish, the server prints the modified file and terminates on user command.
+
+**Client** — connects to the server via a named pipe and performs operations in a loop:
+- Modify record — requests a record by ID, receives it from the server, prints it, accepts new values from the console, sends the updated record back, and commits changes.
+- Read record — requests a record by ID, receives it from the server, prints it, and releases access.
+- Exit — terminates the client process.
+
+Build system: CMake Language standard: C++11 Unit testing framework: GoogleTest
+
+Key files:
+- **employee.h / employee.cpp** — define the employee structure; implement binary read/write, validation and helper functions for the structure
+
+- **message.h / message.cpp** — define the Message structure for client–server communication, including command handling (read, modify, commit, release, exit).
+
+- **pipes.h / pipes.cpp** — implement wrappers around WinAPI named pipe operations (pipeRead, pipeWrite) with error.
+
+- **ClientHandler.h / ClientHandler.cpp** — implement server‑side logic for record locking, record modification and request processing loop.
+
+- **server.cpp** — entry point for the server process: creates the binary file, launches clients, manages named pipe connections and prints the final file.
+
+- **client.cpp** — entry point for the client process: connects to the server, interacts with the user, sends requests, and handles responses.
+
+- **tests/unitTests.cpp** — unit tests for core functionality: binary read/write of employee, validation, message command handling and error conditions in ClientHandler.
+
+- **tests/scenarioTests.cpp** — scenario tests verifying end‑to‑end behavior: modify–commit–release cycle, reading existing records and handling nonexistent IDs.
