@@ -1,10 +1,10 @@
-package com.hohlov.todo_api;
+package com.hohlov.gateway_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TodoApiApplicationTests {
+class GatewayServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
