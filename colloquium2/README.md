@@ -1,4 +1,4 @@
-### Colloquim 2 - To-Do List REST API (Microservices Edition)
+### Colloquim 2 - To-Do List REST API
 
 **A Spring Boot 4.0.1 application providing a RESTful API for task management. It implements CRUD operations using a SQLite database, includes basic caching, monitoring, logging tools and a secure Gateway layer for traffic control.**
 
