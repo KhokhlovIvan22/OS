@@ -29,7 +29,7 @@
 * **TaskController.java** — REST controller for handling HTTP requests.
 * **TaskRepository.java** — Repository interface for SQLite database operations.
 * **application.properties** — Database and application settings.
-* **TaskControllerTest.java** — Comprehensive integration test for the full task lifecycle (CRUD operations).
+* **TaskControllerTests.java** — Comprehensive integration test for the full task lifecycle + 2 Unit-tests for PATCH logic and ID protection.
 * **TodoApiApplicationTests.java** — Basic smoke test to verify application context loading.
 
 **Gateway Service (`/gateway_service` — Port: 8080):**
