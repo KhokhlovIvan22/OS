@@ -31,6 +31,58 @@ class TaskControllerTest {
     }
 
     @Test
+    void testPatchPreserve() throws Exception {
+        //PATCH preservation test: check if fields not included in request are kept in DB
+        String postJson = """
+                {
+                 "title": "Купить молоко",
+                 "description": "Обязательно 3.2% жирности",
+                 "status": "todo"
+                }
+                """;
+        String response = mockMvc.perform(post("/tasks").contentType(MediaType.APPLICATION_JSON)
+                        .content(postJson))
+                .andReturn().getResponse().getContentAsString();
+        String patchJson = "{\"status\": \"done\"}";
+        mockMvc.perform(patch("/tasks/" + 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(patchJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("done"))
+                .andExpect(jsonPath("$.description").value("Обязательно 3.2% жирности"))
+                .andExpect(jsonPath("$.title").value("Купить молоко"));
+    }
+
+    @Test
+    void testPutIgnoreId() throws Exception {
+        //PUT ID protection test: check if ID from URL overrides ID from JSON body
+        String postJson = """
+                {
+                 "title": "Запустить API",
+                 "description": "Сделать тесты",
+                 "status": "todo"
+                }
+                """;
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postJson));
+        String putJson = """
+                {
+                 "id": 999,
+                 "title": "Запустить API",
+                 "description": "Тесты сделаны",
+                 "status": "in_progress"
+                }
+                """;
+        mockMvc.perform(put("/tasks/" + 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(putJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.status").value("in_progress"));
+    }
+
+    @Test
     void testFullTaskLifecycle() throws Exception {
         //POST test
         String postJson1 = """
@@ -45,7 +97,6 @@ class TaskControllerTest {
                         .content(postJson1))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Купить молоко"));
-
         String postJson2 = """
                 {
                  "title": "Запустить API",
