@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -27,7 +28,16 @@ public class GatewayController {
 
     private final RestTemplate restTemp = new RestTemplate();
 
-    private final String backendAdress = "http://localhost:8081";
+    private String backendUrl;
+
+    private String gatewayURL;
+
+    public GatewayController(@Value("${backend.api.url}") String backendUrl,
+                             @Value("${gateway.url}") String gatewayURL) {
+        this.backendUrl = backendUrl;
+        this.gatewayURL = gatewayURL;
+        log.info("GatewayController is ready. Backend: {}, Gateway: {}", this.backendUrl, this.gatewayURL);
+    }
 
     @RequestMapping(value = {"/tasks/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html"})
     public ResponseEntity<?> proxy(@RequestBody(required = false) byte[] body, HttpServletRequest request) {
@@ -40,19 +50,19 @@ public class GatewayController {
                     .body("Too many requests. Try again in " + secondsLeft + " second(s)");
         }
         String path = String.valueOf(request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE));
-        String fullAdress = backendAdress + path;
+        String fullUrl = backendUrl + path;
         String method = request.getMethod();
         HttpHeaders headers = new HttpHeaders();
         Collections.list(request.getHeaderNames()).forEach(name -> headers.add(name, request.getHeader(name)));
         HttpEntity<byte[]> entity = new HttpEntity<>(body, headers);
         try {
-            ResponseEntity<byte[]> response = restTemp.exchange(fullAdress,
+            ResponseEntity<byte[]> response = restTemp.exchange(fullUrl,
                     HttpMethod.valueOf(method), entity, byte[].class);
             log.info("API: {} {} -> {} [Tokens left: {}]",
                     method, path, response.getStatusCode(), probe.getRemainingTokens());
             if (path != null && path.contains("v3/api-docs") && response.getBody() != null) {
                 String json = new String(response.getBody());
-                json = json.replace(backendAdress, "http://localhost:8080");
+                json = json.replace(backendUrl, gatewayURL);
                 return ResponseEntity.status(response.getStatusCode())
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(json.getBytes());

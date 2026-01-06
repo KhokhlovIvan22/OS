@@ -83,6 +83,18 @@ class TaskControllerTests {
     }
 
     @Test
+    void testNotFoundResponse() throws Exception {
+        //Negative GET test: attempt to get a task by a deliberately non-existent number
+        long id = 9999L;
+        mockMvc.perform(get("/tasks/" + id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Task with ID " + id + " not found"));
+    }
+
+    @Test
     void testFullTaskLifecycle() throws Exception {
         //POST test
         String postJson1 = """
@@ -150,8 +162,5 @@ class TaskControllerTests {
         //DELETE test
         mockMvc.perform(delete("/tasks/1")).andExpect(status().isOk());
         mockMvc.perform(delete("/tasks/2")).andExpect(status().isOk());
-
-        //Negative GET test
-        mockMvc.perform(get("/tasks/2")).andExpect(status().isNotFound());
     }
 }

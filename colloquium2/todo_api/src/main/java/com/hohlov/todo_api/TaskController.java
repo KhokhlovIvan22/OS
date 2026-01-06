@@ -16,6 +16,7 @@ import java.util.*;
 @RequestMapping("/tasks")
 @SecurityRequirement(name = "Authentication")
 public class TaskController {
+
     private final TaskRepository repository;
 
     private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
@@ -52,11 +53,7 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<Task> get(@PathVariable Long id) {
         logger.info("GET: searching for task with ID {}", id);
-        Task found = repository.findById(id).orElse(null);
-        if (found == null) {
-            logger.warn("Task with ID {} not found", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        Task found = repository.findById(id).orElseThrow(()->new GlobalExceptionHandler.TaskNotFoundException(id));
         logger.info("Task with ID {} retrieved successfully", id);
         return new ResponseEntity<>(found, HttpStatus.OK);
     }
@@ -66,10 +63,8 @@ public class TaskController {
     @PutMapping("/{id}")
     public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody Task task) {
         logger.info("PUT: received update request for task with ID {}", id);
-        Task found = repository.findById(id).orElse(null);
-        if (found == null) {
-            logger.warn("Task with ID {} not found", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (!repository.existsById(id)) {
+            throw new GlobalExceptionHandler.TaskNotFoundException(id);
         }
         task.setId(id);
         Task updated = repository.save(task);
@@ -84,11 +79,7 @@ public class TaskController {
     @PatchMapping("/{id}")
     public ResponseEntity<Task> patch(@PathVariable Long id, @RequestBody Task task) {
         logger.info("PATCH: check for changes in task with ID {}", id);
-        Task found = repository.findById(id).orElse(null);
-        if (found == null) {
-            logger.warn("Task with ID {} not found", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        Task found = repository.findById(id).orElseThrow(()->new GlobalExceptionHandler.TaskNotFoundException(id));
         boolean isChanged = false;
         if (task.getTitle() != null && !task.getTitle().equals(found.getTitle())) {
             logger.info("ID {} -> title changed", id);
@@ -120,8 +111,7 @@ public class TaskController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         logger.info("DELETE: request to remove task with ID {}", id);
         if (!repository.existsById(id)) {
-            logger.warn("Task with ID {} not found, nothing to delete", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new GlobalExceptionHandler.TaskNotFoundException(id);
         }
         repository.deleteById(id);
         logger.info("Task with ID {} successfully deleted", id);

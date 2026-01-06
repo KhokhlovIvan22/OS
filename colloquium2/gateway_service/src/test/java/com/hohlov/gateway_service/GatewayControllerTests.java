@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@SpringBootTest
-class GatewayControllerTest {
+@SpringBootTest(properties = {"backend.api.url=http://localhost:8081", "gateway.url=http://localhost:8080"})
+class GatewayControllerTests {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
