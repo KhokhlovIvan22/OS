@@ -26,7 +26,7 @@ public class GatewayController {
             .addLimit(limit -> limit.capacity(10)
                     .refillGreedy(10, Duration.ofMinutes(1))).build();
 
-    private final RestTemplate restTemp = new RestTemplate();
+    private final RestTemplate restTemp = new RestTemplate(new org.springframework.http.client.HttpComponentsClientHttpRequestFactory());
 
     private String backendUrl;
 
@@ -41,15 +41,18 @@ public class GatewayController {
 
     @RequestMapping(value = {"/tasks/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html"})
     public ResponseEntity<?> proxy(@RequestBody(required = false) byte[] body, HttpServletRequest request) {
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
-        if (!probe.isConsumed()) {
-            long secondsLeft = probe.getNanosToWaitForRefill() / 1_000_000_000;
-            log.warn("Rate limit exceeded for client: {}. Next token in {} sec",
-                    request.getRemoteAddr(), secondsLeft);
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body("Too many requests. Try again in " + secondsLeft + " second(s)");
-        }
         String path = String.valueOf(request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE));
+        boolean isSwagger = path != null && (path.contains("swagger") || path.contains("v3/api-docs"));
+        if (!isSwagger) {
+            ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+            if (!probe.isConsumed()) {
+                long secondsLeft = probe.getNanosToWaitForRefill() / 1_000_000_000;
+                log.warn("Rate limit exceeded for client: {}. Next token in {} sec",
+                        request.getRemoteAddr(), secondsLeft);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body("Too many requests. Try again in " + secondsLeft + " second(s)");
+            }
+        }
         String fullUrl = backendUrl + path;
         String method = request.getMethod();
         HttpHeaders headers = new HttpHeaders();
@@ -58,8 +61,6 @@ public class GatewayController {
         try {
             ResponseEntity<byte[]> response = restTemp.exchange(fullUrl,
                     HttpMethod.valueOf(method), entity, byte[].class);
-            log.info("API: {} {} -> {} [Tokens left: {}]",
-                    method, path, response.getStatusCode(), probe.getRemainingTokens());
             if (path != null && path.contains("v3/api-docs") && response.getBody() != null) {
                 String json = new String(response.getBody());
                 json = json.replace(backendUrl, gatewayURL);

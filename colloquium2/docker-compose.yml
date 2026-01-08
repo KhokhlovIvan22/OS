@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  todo-api:
+    build:
+      context: ./todo_api/todo-api
+      dockerfile: Dockerfile
+    container_name: todo-api
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./todo_api/data:/app/data
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:data/tasks.db
+    restart: always
+
+  gateway-service:
+    build:
+      context: ./gateway_service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - BACKEND_URL=http://todo-api:8081
+    depends_on:
+      - todo-api
+    restart: always
